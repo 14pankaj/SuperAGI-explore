@@ -3,6 +3,8 @@ services:
   backend:
     volumes:
       - "./:/app"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     build: .
     depends_on:
       - super__redis

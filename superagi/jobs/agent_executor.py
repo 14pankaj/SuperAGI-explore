@@ -1,4 +1,5 @@
 from datetime import datetime, timedelta
+import traceback
 
 from sqlalchemy.orm import sessionmaker
 from superagi.llms.local_llm import LocalLLM
@@ -87,7 +88,9 @@ class AgentExecutor:
                                              model_api_key, organisation, session)
 
             except Exception as e:
+                logger.info(traceback.format_exc())
                 logger.info("Exception in executing the step: {}".format(e))
+                logger.info(agent, agent_workflow_step)
                 superagi.worker.execute_agent.apply_async((agent_execution_id, datetime.now()), countdown=15)
                 return
 
@@ -138,6 +141,8 @@ class AgentExecutor:
             return Replicate(api_key=model_api_key)
         if "Custom" in model_source:
             return LocalLLM()
+        if "MI6" in model_source:
+            return 
         return None
 
     def _check_for_max_iterations(self, session, organisation_id, agent_config, agent_execution_id):
