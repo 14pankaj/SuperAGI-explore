@@ -77,8 +77,8 @@ class Mi6(BaseLlm):
         prepared_prompt = ". ".join(prepared_prompt)
         return prepared_prompt
 
-    def chat_completion(self, prompt, token_limit = 2000):
-        url = "https://apis-internal-sandbox.intel.com/mi6/ui/v1/conversations" 
+    def chat_completion(self, prompt, token_limit = 6000):
+        url = "https://apis-dev.intel.com/mi6/ui/v1/conversations" 
         header = {
             'Content-Type': 'application/json',
             "Authorization": f"Bearer {self.auth_token}"
@@ -88,14 +88,17 @@ class Mi6(BaseLlm):
                     "query": prompt,
                     "use_case": self.use_case,
                     "temperature": self.temperature,
-                    "inference_model": self.model,
+                    "inference_model": "azure.openai.gpt.4",
                     "stream": False,
                     "token_limit": token_limit,
-                    "tags": self.tags
+                    "tags": []
         })
         try:
             response = requests.request("POST", url, headers=header, data=payload)
+            logger.info(response)
             content = response.json()
+            logger.info("the final respone",content["last_message"])
+
             if "error" in content:
                 raise Exception("Error in response")
             return {"response": content, "content": content["last_message"]["assistant"]}
