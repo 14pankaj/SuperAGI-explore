@@ -36,6 +36,7 @@ class GetProjectsTool(JiraTool):
         """
         jira = self.build_jira_instance()
         projects = jira.projects()
+        logger.info("The project loaded",projects)
         parsed_projects = self.parse_projects(projects)
         parsed_projects_str = (
                 "Found " + str(len(parsed_projects)) + " projects:\n" + str(parsed_projects)

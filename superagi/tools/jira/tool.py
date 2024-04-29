@@ -39,7 +39,7 @@ class JiraTool(BaseTool):
         jira_username = self.get_tool_config("JIRA_USERNAME")
         jira_api_token = self.get_tool_config("JIRA_API_TOKEN")
         jira = JIRA(
-            server=jira_instance_url,
+            options={'server':jira_instance_url, 'verify':'superagi/tools/jira/Intel SHA256 Root CA.crt'},
             basic_auth=(jira_username, jira_api_token)
         )
         return jira
