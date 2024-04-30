@@ -2,6 +2,7 @@ from typing import Type, List
 
 from pydantic import BaseModel, Field
 
+from superagi.lib.logger import logger
 from superagi.tools.jira.tool import JiraIssueSchema, JiraTool
 
 class GetProjectsSchema(BaseModel):
