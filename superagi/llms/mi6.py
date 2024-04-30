@@ -48,7 +48,7 @@ data:
 
 '''
 class Mi6(BaseLlm):
-    def __init__(self, auth_token, model="azure.openai.gpt.3.5", temperature=0.5, use_case='generic', tags=None):
+    def __init__(self, auth_token, model="azure.openai.gpt.4", temperature=0.5, use_case='generic', tags=None):
         self.auth_token = auth_token
         self.model = model
         self.temperature = temperature
@@ -77,7 +77,7 @@ class Mi6(BaseLlm):
         prepared_prompt = ". ".join(prepared_prompt)
         return prepared_prompt
 
-    def chat_completion(self, prompt, token_limit = 6000):
+    def chat_completion(self, prompt, max_tokens = 4000):
         url = "https://apis-dev.intel.com/mi6/ui/v1/conversations" 
         header = {
             'Content-Type': 'application/json',
@@ -88,20 +88,26 @@ class Mi6(BaseLlm):
                     "query": prompt,
                     "use_case": self.use_case,
                     "temperature": self.temperature,
-                    "inference_model": "azure.openai.gpt.4",
+                    "inference_model": self.model,
                     "stream": False,
-                    "token_limit": token_limit,
+                    "token_limit": max_tokens,
                     "tags": []
         })
         try:
             response = requests.request("POST", url, headers=header, data=payload)
+            response.raise_for_status()
             logger.info(response)
             content = response.json()
             logger.info("the final respone",content["last_message"])
-
-            if "error" in content:
-                raise Exception("Error in response")
             return {"response": content, "content": content["last_message"]["assistant"]}
+        except requests.exceptions.HTTPError as e:
+            logger.error("Http Error:",e, e.response.text)
+        except requests.exceptions.ConnectionError as e:
+            logger.error("Connection Error:",e, e.response.text)
+        except requests.exceptions.Timeout as e:
+            logger.error("Timeout:",e, e.response.text)
+        except requests.exceptions.RequestException as err:
+            logger.error("Request error:",err, err.response.text)
         except Exception as e:
             logger.error(traceback.format_exc(), prompt)
             logger.error(response.json())
