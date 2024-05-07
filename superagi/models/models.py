@@ -1,6 +1,7 @@
 import yaml
 from sqlalchemy import Column, Integer, String, and_
 from sqlalchemy.sql import func
+from sqlalchemy.sql import text
 from typing import List, Dict, Union
 from superagi.models.base_model import DBBaseModel
 from superagi.controllers.types.models_types import ModelsTypes

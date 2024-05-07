@@ -6,6 +6,7 @@ from tenacity import retry, retry_if_exception_type, stop_after_attempt, wait_ra
 from superagi.config.config import get_config
 from superagi.lib.logger import logger
 from superagi.llms.base_llm import BaseLlm
+from superagi.controllers.models_controller import StoreModelRequest
 
 MAX_RETRY_ATTEMPTS = 5
 MIN_WAIT = 30 # Seconds
@@ -46,9 +47,9 @@ data:
     "feedback":null}
 }
 
-'''
+''' 
 class Mi6(BaseLlm):
-    def __init__(self, auth_token, model="azure.openai.gpt.4", temperature=0.5, use_case='generic', tags=None):
+    def __init__(self, auth_token, model='azure.openai.gpt.4', temperature=0.5, use_case='generic', tags=None):
         self.auth_token = auth_token
         self.model = model
         self.temperature = temperature
@@ -93,6 +94,7 @@ class Mi6(BaseLlm):
                     "token_limit": max_tokens,
                     "tags": []
         })
+        logger.info("payload for chat completion",payload)
         try:
             response = requests.request("POST", url, headers=header, data=payload)
             response.raise_for_status()
@@ -109,8 +111,6 @@ class Mi6(BaseLlm):
         except requests.exceptions.RequestException as err:
             logger.error("Request error:",err, err.response.text)
         except Exception as e:
-            logger.error(traceback.format_exc(), prompt)
-            logger.error(response.json())
             logger.error(e)
             
     def verify_access_key(self):
