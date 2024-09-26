@@ -1,6 +1,7 @@
 import yaml
 from sqlalchemy import Column, Integer, String, and_
 from sqlalchemy.sql import func
+from sqlalchemy.sql import text
 from typing import List, Dict, Union
 from superagi.models.base_model import DBBaseModel
 from superagi.controllers.types.models_types import ModelsTypes
@@ -132,7 +133,7 @@ class Models(DBBaseModel):
             return model  # Return error message if model not found
 
         # Check the 'provider' from ModelsConfig table
-        if not end_point and model["provider"] not in ['OpenAI', 'Google Palm', 'Replicate','Local LLM']:
+        if not end_point and model["provider"] not in ['OpenAI', 'Google Palm', 'Replicate','Local LLM', 'MI6']:
             return {"error": "End Point is empty or undefined"}
 
         if context_length is None: 

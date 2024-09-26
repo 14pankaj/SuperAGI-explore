@@ -1,4 +1,5 @@
 from sqlalchemy import Column, Integer, String, and_, distinct
+from sqlalchemy.sql import text
 from superagi.lib.logger import logger
 from superagi.models.base_model import DBBaseModel
 from superagi.models.organisation import Organisation
@@ -7,6 +8,7 @@ from superagi.models.models import Models
 from superagi.llms.openai import OpenAi
 from superagi.helper.encyption_helper import encrypt_data, decrypt_data
 from fastapi import HTTPException
+import requests
 import logging
 
 class ModelsConfig(DBBaseModel):
@@ -83,8 +85,8 @@ class ModelsConfig(DBBaseModel):
             existing_entry.api_key = encrypt_data(model_api_key)
             session.commit()
             session.flush()
-            if model_provider == 'OpenAI':
-                cls.storeGptModels(session, organisation_id, existing_entry.id, model_api_key)
+            #if model_provider == 'OpenAI':
+            cls.storeGptModels(session, organisation_id, existing_entry.id, model_api_key,model_provider)
             result = {'message': 'The API key was successfully updated'}
         else:
             new_entry = ModelsConfig(org_id=organisation_id, provider=model_provider,
@@ -92,21 +94,51 @@ class ModelsConfig(DBBaseModel):
             session.add(new_entry)
             session.commit()
             session.flush()
-            if model_provider == 'OpenAI':
-                cls.storeGptModels(session, organisation_id, new_entry.id, model_api_key)
+            cls.storeGptModels(session, organisation_id, new_entry.id, model_api_key,model_provider)
             result = {'message': 'The API key was successfully stored', 'model_provider_id': new_entry.id}
 
         return result
 
     @classmethod
-    def storeGptModels(cls, session, organisation_id, model_provider_id, model_api_key):
-        default_models = {"gpt-3.5-turbo": 4032, "gpt-4": 8092, "gpt-3.5-turbo-16k": 16184}
-        models = OpenAi(api_key=model_api_key).get_models()
-        installed_models = [model[0] for model in session.query(Models.model_name).filter(Models.org_id == organisation_id).all()]
-        for model in models:
-            if model not in installed_models and model in default_models:
-                result = Models.store_model_details(session, organisation_id, model, model, '',
-                                                 model_provider_id, default_models[model], 'Custom', '', 0)
+    def storeGptModels(cls, session, organisation_id, model_provider_id, model_api_key,model_provider):
+        if model_provider == 'OpenAI':
+            default_models = {"gpt-3.5-turbo": 4032, "gpt-4": 8092, "gpt-3.5-turbo-16k": 16184}
+            models = OpenAi(api_key=model_api_key).get_models()
+            installed_models = [model[0] for model in session.query(Models.model_name).filter(Models.org_id == organisation_id).all()]
+            for model in models:
+                if model not in installed_models and model in default_models:
+                    result = Models.store_model_details(session, organisation_id, model, model, '',
+                                                    model_provider_id, default_models[model], 'Custom', '', 0)
+        else:
+            url="https://apis-dev.intel.com/mi6/ui/v1/supported-models"
+            logger.info(model_api_key)
+            header = {
+                'Content-Type': 'application/json',
+                "Authorization": f"Bearer {model_api_key}"
+            }
+            try:
+                response = requests.request("GET", url, headers=header)
+                logger.info(response.json)
+                contents = response.json()
+                #response.raise_for_status()
+                for content in contents['data']:
+                    storeModel = {
+                        "model_name":content['model_type'],
+                        "description":content['vendor'],
+                        "token_limit":4000,
+                        "type":content['model_type'],
+                        "version":content['version'],
+                        "context_length":content['data_insights_output_token']
+                        }
+                    logger.info("mi6 models",storeModel)
+                    installed_models = [model[0] for model in session.query(Models.model_name).filter(Models.org_id == organisation_id).all()]
+                    logger.info("Current Model",storeModel)
+                    result = Models.store_model_details(session, organisation_id, storeModel['type'], storeModel['description'], '',
+                                                            model_provider_id, storeModel['token_limit'], storeModel['type'], storeModel['version'], 0)
+            except Exception as e:
+                logger.error(e)
+
+            
 
     @classmethod
     def fetch_api_keys(cls, session, organisation_id):

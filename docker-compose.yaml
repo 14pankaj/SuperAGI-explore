@@ -3,10 +3,14 @@ services:
   backend:
     volumes:
       - "./:/app"
+    environment:
+      - CHOKIDAR_USEPOLLING=true
     build: .
     depends_on:
       - super__redis
       - super__postgres
+    ports:
+      - "8001:8001"
     networks:
       - super_network
     command: ["/app/wait-for-it.sh", "super__postgres:5432","-t","60","--","/app/entrypoint.sh"]
@@ -18,6 +22,8 @@ services:
     depends_on:
       - super__redis
       - super__postgres
+    ports:
+      - "5555:5555"
     networks:
       - super_network
     command: ["/app/entrypoint_celery.sh"]

@@ -53,7 +53,7 @@ class TokenCounter:
             default_tokens_per_message = 4
             model_token_per_message_dict = {"gpt-3.5-turbo-0301": 4, "gpt-4-0314": 3, "gpt-3.5-turbo": 4, "gpt-4": 3,
                                             "gpt-3.5-turbo-16k": 4, "gpt-4-32k": 3, "gpt-4-32k-0314": 3,
-                                            "models/chat-bison-001": 4}
+                                            "models/chat-bison-001": 4,"mi6-conversation":5}
             encoding = tiktoken.encoding_for_model(model)
         except KeyError:
             logger.warning("Warning: model not found. Using cl100k_base encoding.")

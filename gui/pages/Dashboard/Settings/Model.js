@@ -13,7 +13,8 @@ export default function Model({organisationId}) {
     {'name':'Open AI API key','logo':'/images/openai_logo.svg','source':'OpenAi', 'api_key': ''},
     {'name':'Hugging Face auth token','logo':'/images/huggingface_logo.svg','source':'Hugging Face', 'api_key': ''},
     {'name':'Replicate auth token','logo':'/images/replicate_logo.svg','source':'Replicate', 'api_key': ''},
-    {'name':'Google Palm API key','logo':'/images/google_palm_logo.svg','source':'Google Palm', 'api_key': ''}
+    {'name':'Google Palm API key','logo':'/images/google_palm_logo.svg','source':'Google Palm', 'api_key': ''},
+    {'name':'MI6 Auth Token','logo':'/images/google_palm_logo.svg','source':'MI6', 'api_key': ''}
   ]);
   const [updatedModels, setUpdatedModels] = useState([]);
 

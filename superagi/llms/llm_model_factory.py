@@ -3,13 +3,14 @@ from superagi.llms.local_llm import LocalLLM
 from superagi.llms.openai import OpenAi
 from superagi.llms.replicate import Replicate
 from superagi.llms.hugging_face import HuggingFace
+from superagi.llms.mi6 import Mi6
 from superagi.models.models_config import ModelsConfig
 from superagi.models.models import Models
 from sqlalchemy.orm import sessionmaker
 from superagi.models.db import connect_db
 
 
-def get_model(organisation_id, api_key, model="gpt-3.5-turbo", **kwargs):
+def get_model(organisation_id, api_key, model="azure.openai.gpt.3.5", **kwargs):
     print("Fetching model details from database...")
     engine = connect_db()
     Session = sessionmaker(bind=engine)
@@ -37,6 +38,9 @@ def get_model(organisation_id, api_key, model="gpt-3.5-turbo", **kwargs):
     elif provider_name == 'Local LLM':
         print("Provider is Local LLM")
         return LocalLLM(model=model_instance.model_name, context_length=model_instance.context_length)
+    elif provider_name == 'MI6':
+        print("Provider is MI6")
+        return Mi6(auth_token=api_key, model=model_instance.model_name, **kwargs)
     else:
         print('Unknown provider.')
 
@@ -51,5 +55,7 @@ def build_model_with_api_key(provider_name, api_key):
         return HuggingFace(api_key=api_key)
     elif provider_name.lower() == 'local llm':
         return LocalLLM(api_key=api_key)
+    elif provider_name.lower() == 'mi6':
+        return Mi6(auth_token=api_key)
     else:
         print('Unknown provider.')
